@@ -1,14 +1,14 @@
 {
   "name": "testpelotilla",
   "version": "1.0.0",
-  "description": "Proyecto para registrar resultados pelotilla",
+  "description": "Servidor de resultados deportivos con SQLite",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "sqlite3": "^5.1.6",
-    "body-parser": "^1.20.2"
+    "sqlite3": "^5.1.6"
   }
 }

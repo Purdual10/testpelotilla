@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pelotilla</title>
+</head>
+<body>
+  <h1>Pelotilla Resultados</h1>
+  <form id="formulario">
+    <input name="fecha" placeholder="Fecha"><br>
+    <input name="pelotillero" placeholder="Pelotillero"><br>
+    <input name="resultado" placeholder="Resultado"><br>
+    <input name="goleador" placeholder="Goleador"><br>
+    <input name="modo" placeholder="Modo"><br>
+    <button type="submit">Guardar</button>
+  </form>
+  <pre id="respuestas"></pre>
+  <script>
+    document.getElementById('formulario').onsubmit = async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      const res = await fetch('/guardar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      document.getElementById('respuestas').textContent = JSON.stringify(json, null, 2);
+    }
+  </script>
+</body>
+</html>
