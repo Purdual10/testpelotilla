@@ -4,10 +4,14 @@ const path = require('path');
 const { guardarResultado, obtenerResultados } = require('./sqlite');
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
+// Sirve archivos estáticos desde la carpeta public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Ruta para guardar resultados (POST)
 app.post('/guardar', (req, res) => {
   guardarResultado(req.body, (err, id) => {
     if (err) {
@@ -18,6 +22,7 @@ app.post('/guardar', (req, res) => {
   });
 });
 
+// Ruta para obtener resultados (GET)
 app.get('/resultados', (req, res) => {
   obtenerResultados((err, resultados) => {
     if (err) {
@@ -27,7 +32,7 @@ app.get('/resultados', (req, res) => {
   });
 });
 
-// Ruta fallback para servir index.html en rutas desconocidas
+// Ruta catch-all para que cualquier otra ruta sirva el index.html (SPA)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
