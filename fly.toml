@@ -1,0 +1,8 @@
+app = "nombre-de-tu-app-en-fly"  # Sustituye por el nombre real de tu app
+
+[env]
+PORT = "3000"
+
+[[mounts]]
+  source = "data"
+  destination = "/data"
