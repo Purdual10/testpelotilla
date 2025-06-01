@@ -1,32 +1,265 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Pelotilla</title>
-</head>
-<body>
-  <h1>Pelotilla Resultados</h1>
-  <form id="formulario">
-    <input name="fecha" placeholder="Fecha"><br>
-    <input name="pelotillero" placeholder="Pelotillero"><br>
-    <input name="resultado" placeholder="Resultado"><br>
-    <input name="goleador" placeholder="Goleador"><br>
-    <input name="modo" placeholder="Modo"><br>
-    <button type="submit">Guardar</button>
-  </form>
-  <pre id="respuestas"></pre>
-  <script>
-    document.getElementById('formulario').onsubmit = async (e) => {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target));
-      const res = await fetch('/guardar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      const json = await res.json();
-      document.getElementById('respuestas').textContent = JSON.stringify(json, null, 2);
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PinpiAthleticzales</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    input[readonly] {
+      background-color: #f3f4f6;
     }
+  </style>
+</head>
+<body class="bg-red-600 min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-md bg-white p-6 rounded-xl shadow-lg space-y-4">
+
+    <!-- Logo -->
+    <div class="text-center">
+      <img src="https://cdn.glitch.global/378bf2b7-aac6-4721-a6ce-ed31b0c42b03/9e975bf4-c6d1-47ad-9c41-5dfffed7fe27.png?v=1748697064896" alt="Logo" class="mx-auto mb-4">
+    </div>
+
+    <!-- Próximo partido -->
+    <label class="block text-gray-700 text-sm mb-1">Próximo partido</label>
+    <input type="text" readonly id="proximoPartido" class="w-full border rounded p-2 text-center"/>
+
+    <!-- Fecha límite -->
+    <label class="block text-gray-700 text-sm mb-1">Fecha límite para resultado</label>
+    <input type="text" readonly id="fechaLimite" class="w-full border rounded p-2 text-center"/>
+
+    <!-- Cuenta atrás -->
+    <div class="text-center text-red-600 font-semibold text-lg" id="cuentaAtras"></div>
+
+    <!-- Selector 1 -->
+    <label class="block text-gray-700 text-sm mb-1">Pelotillero</label>
+    <select id="selector1" class="w-full border rounded p-2">
+      <option value="">Selecciona</option>
+      <option value="0">Aitor</option>
+      <option value="1">Ando</option>
+      <option value="2">Argi</option>
+      <option value="3">Asier</option>
+      <option value="4">Borja</option>
+      <option value="5">Diego</option>
+      <option value="6">Gaizka</option>
+      <option value="7">Gallo</option>
+      <option value="81">Igor</option>
+      <option value="9">Iker</option>
+      <option value="10">Iñaki</option>
+      <option value="11">Iñako</option>
+      <option value="12">Joseba</option>
+      <option value="13">Mantxi</option>
+      <option value="14">Miguel</option>
+      <option value="15">Ñangrejo</option>
+      <option value="16">Pablo</option>
+      <option value="17">Paste</option>
+      <option value="18">Patri</option>
+      <option value="19">Patxo</option>
+      <option value="20">Pelo</option>
+      <option value="21">Petxotes</option>
+      <option value="22">Presi</option>
+      <option value="23">Ritxiwintxi</option>
+      <option value="24">Sandra</option>
+      <option value="25">Txelu</option>
+      <option value="26">Unai</option>
+      <option value="27">Urko</option>
+    </select>
+
+    <!-- Resultado -->
+    <input id="resultadoInput" placeholder="0-0" class="w-full border rounded p-2 text-center" />
+    <span id="resultadoError" class="text-red-600 text-sm hidden">Formato inválido. Usa número-número (ej. 1-0)</span>
+
+    <!-- Selector 2 -->
+    <label class="block text-gray-700 text-sm mb-1">Goleador zurigorri</label>
+    <select id="selector2" class="w-full border rounded p-2">
+      <option value="">Selecciona</option>
+      <option value="0">1- Simón</option>
+      <option value="1">13- Agirrezabala</option>
+      <option value="2">2- Gorosabel</option>
+      <option value="3">3- Vivian</option>
+      <option value="4">4- Paredes</option>
+      <option value="5">5- Yeray</option>
+      <option value="6">14- Nuñez</option>
+      <option value="7">15- I. Lekue</option>
+      <option value="81">17- Yuri</option>
+      <option value="9">32- Adama</option>
+      <option value="10">6- Vesga</option>
+      <option value="11">8- Sancet</option>
+      <option value="12">16- Ruiz de Galarreta</option>
+      <option value="13">20- Unai Gómez</option>
+      <option value="14">18- Jauregizar</option>
+      <option value="15">24- Prados</option>
+      <option value="16">28- Canales</option>
+      <option value="17">7- Berenguer</option>
+      <option value="18">9- Iñaki Williams</option>
+      <option value="19">10- Nico Williams</option>
+      <option value="20">11- Djaló</option>
+      <option value="21">12- Guruzeta</option>
+      <option value="22">21- Maroan</option>
+      <option value="23">33- Olabarrieta</option>
+      <option value="24">43- Buján</option>
+    </select>
+
+    <!-- Checkboxes exclusivos -->
+    <div class="flex justify-around mt-2">
+      <label><input type="checkbox" name="modo" value="J" class="modoCheckbox mr-1">J</label>
+      <label><input type="checkbox" name="modo" value="C" class="modoCheckbox mr-1">C</label>
+      <label><input type="checkbox" name="modo" value="F" class="modoCheckbox mr-1">F</label>
+      <label><input type="checkbox" name="modo" value="P" class="modoCheckbox mr-1">P</label>
+    </div>
+
+    <!-- Botón Enviar sin onclick -->
+    <button
+      id="btnEnviar"
+      class="w-full bg-red-700 text-white py-2 rounded mt-4 hover:bg-red-800"
+    >
+      Enviar resultado
+    </button>
+
+    <!-- Mensaje personalizado -->
+    <div id="mensajeUsuario" class="text-center font-semibold text-red-700 mt-2"></div>
+
+    <!-- Botones inferiores -->
+    <div class="flex justify-between mt-2">
+      <button onclick="mostrarMensaje('¡Pa qué tocas!')" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Instrucciones</button>
+      <button onclick="mostrarMensaje('Ni la mires, eres un maula y vas a pagar')" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Clasificación</button>
+    </div>
+
+  </div>
+
+  <script>
+    const prox_parti = new Date("2025-08-17T18:30:00");
+    const fecha_limite = new Date("2025-08-17T16:00:00");
+
+    function formatearFecha(fecha) {
+      const año = fecha.getFullYear();
+      const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+      const dia = String(fecha.getDate()).padStart(2, '0');
+      const hora = String(fecha.getHours()).padStart(2, '0');
+      const minutos = String(fecha.getMinutes()).padStart(2, '0');
+      return `${año}-${mes}-${dia} ${hora}:${minutos}`;
+    }
+
+    document.getElementById("proximoPartido").value = formatearFecha(prox_parti);
+    document.getElementById("fechaLimite").value = formatearFecha(fecha_limite);
+
+    function actualizarCuentaAtras() {
+      const ahora = new Date().getTime();
+      const limite = fecha_limite.getTime();
+      const distancia = limite - ahora;
+
+      if (distancia < 0) {
+        document.getElementById("cuentaAtras").textContent = "¡Tiempo agotado!";
+        return;
+      }
+
+      const dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+      const segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+
+      document.getElementById("cuentaAtras").textContent = `${dias}d ${horas}h ${minutos}m ${segundos}s`;
+    }
+
+    setInterval(actualizarCuentaAtras, 1000);
+    actualizarCuentaAtras();
+
+    document.querySelectorAll('.modoCheckbox').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) {
+          document.querySelectorAll('.modoCheckbox').forEach(other => {
+            if (other !== cb) other.checked = false;
+          });
+        }
+      });
+    });
+
+    function validarResultado() {
+      const input = document.getElementById("resultadoInput");
+      const error = document.getElementById("resultadoError");
+      const valor = input.value.trim();
+      const regex = /^\d{1,2}-\d{1,2}$/;
+      let valido = true;
+
+      if (!regex.test(valor)) {
+        error.classList.remove("hidden");
+        input.classList.add("border-red-500");
+        valido = false;
+      } else {
+        error.classList.add("hidden");
+        input.classList.remove("border-red-500");
+      }
+
+      const selector1 = document.getElementById("selector1");
+      if (!selector1.value) valido = false;
+
+      const selector2 = document.getElementById("selector2");
+      if (!selector2.value) valido = false;
+
+      const modoChecks = document.querySelectorAll(".modoCheckbox");
+      let algunoSeleccionado = false;
+      modoChecks.forEach(cb => {
+        if (cb.checked) algunoSeleccionado = true;
+      });
+      if (!algunoSeleccionado) valido = false;
+
+      return valido;
+    }
+
+    function mostrarMensaje(texto) {
+      const mensajeDiv = document.getElementById("mensajeUsuario");
+      mensajeDiv.textContent = texto;
+      setTimeout(() => {
+        mensajeDiv.textContent = "";
+      }, 5000);
+    }
+
+    document.getElementById("btnEnviar").addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      if (!validarResultado()) {
+        mostrarMensaje("Por favor corrige los errores antes de enviar.");
+        return;
+      }
+
+      const fecha = document.getElementById("fechaLimite").value;
+      const pelotilleroSelect = document.getElementById("selector1");
+      const pelotillero = pelotilleroSelect.options[pelotilleroSelect.selectedIndex].text;
+      const resultado = document.getElementById("resultadoInput").value.trim();
+      const goleadorSelect = document.getElementById("selector2");
+      const goleador = goleadorSelect.options[goleadorSelect.selectedIndex].text;
+      const modoCheckboxes = document.querySelectorAll(".modoCheckbox");
+      let modo = "";
+      modoCheckboxes.forEach((cb) => {
+        if (cb.checked) modo = cb.value;
+      });
+
+      const datos = { fecha, pelotillero, resultado, goleador, modo };
+
+      try {
+        const res = await fetch("/guardar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(datos),
+        });
+
+        const json = await res.json();
+
+        if (res.ok) {
+          mostrarMensaje("Resultado guardado correctamente. ¡Gracias!");
+          // Limpiar formulario
+          document.getElementById("resultadoInput").value = "";
+          pelotilleroSelect.value = "";
+          goleadorSelect.value = "";
+          modoCheckboxes.forEach((cb) => (cb.checked = false));
+        } else {
+          mostrarMensaje("Error guardando resultado: " + json.error);
+        }
+      } catch (error) {
+        mostrarMensaje("Error en la conexión: " + error.message);
+      }
+    });
   </script>
+
 </body>
 </html>
