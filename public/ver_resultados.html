@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resultados Guardados</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
+    <h1 class="text-2xl font-bold mb-4 text-center text-red-700">Resultados Registrados</h1>
+    <table class="w-full border border-gray-300">
+      <thead>
+        <tr class="bg-red-600 text-white">
+          <th class="border px-4 py-2">Pelotillero</th>
+          <th class="border px-4 py-2">Resultado</th>
+          <th class="border px-4 py-2">Goleador</th>
+          <th class="border px-4 py-2">Modo</th>
+          <th class="border px-4 py-2">Fecha</th>
+        </tr>
+      </thead>
+      <tbody id="tablaResultados"></tbody>
+    </table>
+  </div>
+
+  <script>
+    fetch("/resultados")
+      .then(res => res.json())
+      .then(data => {
+        const cuerpo = document.getElementById("tablaResultados");
+        if (data.length === 0) {
+          cuerpo.innerHTML = `<tr><td colspan="5" class="text-center py-4">No hay resultados aún.</td></tr>`;
+          return;
+        }
+
+        data.forEach(item => {
+          const fila = `
+            <tr>
+              <td class="border px-4 py-2">${item.pelotillero}</td>
+              <td class="border px-4 py-2">${item.resultado}</td>
+              <td class="border px-4 py-2">${item.goleador}</td>
+              <td class="border px-4 py-2">${item.modo}</td>
+              <td class="border px-4 py-2">${item.fecha}</td>
+            </tr>
+          `;
+          cuerpo.innerHTML += fila;
+        });
+      })
+      .catch(err => {
+        document.getElementById("tablaResultados").innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error cargando resultados</td></tr>`;
+        console.error("Error al obtener resultados:", err);
+      });
+  </script>
+</body>
+</html>
