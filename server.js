@@ -8,10 +8,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Sirve archivos estáticos desde la carpeta public
+// Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ruta para guardar resultados (POST)
+// Ruta API para guardar resultado
 app.post('/guardar', (req, res) => {
   guardarResultado(req.body, (err, id) => {
     if (err) {
@@ -22,7 +22,7 @@ app.post('/guardar', (req, res) => {
   });
 });
 
-// Ruta para obtener resultados (GET)
+// Ruta API para obtener resultados
 app.get('/resultados', (req, res) => {
   obtenerResultados((err, resultados) => {
     if (err) {
@@ -32,7 +32,7 @@ app.get('/resultados', (req, res) => {
   });
 });
 
-// Ruta catch-all para que cualquier otra ruta sirva el index.html (SPA)
+// Esta ruta envía siempre el index.html para que la SPA funcione
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
