@@ -1,43 +1,68 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const { guardarResultado, obtenerResultados } = require('./sqlite');
+import express from 'express';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
-
-app.use(cors());
 app.use(express.json());
 
-// Servir archivos estáticos desde la carpeta 'public'
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let db;
+(async () => {
+  db = await open({
+    filename: './partidos.db',
+    driver: sqlite3.Database
+  });
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS partidos (
+      id_partido TEXT PRIMARY KEY,
+      nombre_lugar TEXT,
+      fecha_hora_partido TEXT,
+      fecha_limite_apuesta TEXT,
+      resultado TEXT,
+      goleadores TEXT,
+      modo TEXT
+    )
+  `);
+})();
+
+// Servir archivos estáticos en /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ruta API para guardar resultado
-app.post('/guardar', (req, res) => {
-  guardarResultado(req.body, (err, id) => {
-    if (err) {
-      console.error('Error al guardar resultado:', err.message);
-      return res.status(500).json({ error: 'Error al guardar resultado' });
-    }
-    res.json({ mensaje: 'Resultado guardado con éxito', id });
-  });
+// Endpoint para guardar partido
+app.post('/admin/guardar', async (req, res) => {
+  const { id_partido, nombre_lugar, fecha_hora_partido, fecha_limite_apuesta, resultado, goleadores, modo } = req.body;
+
+  if (!id_partido || !nombre_lugar || !fecha_hora_partido || !fecha_limite_apuesta || !resultado || !modo) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+
+  try {
+    await db.run(`
+      INSERT INTO partidos (id_partido, nombre_lugar, fecha_hora_partido, fecha_limite_apuesta, resultado, goleadores, modo)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id_partido) DO UPDATE SET
+        nombre_lugar=excluded.nombre_lugar,
+        fecha_hora_partido=excluded.fecha_hora_partido,
+        fecha_limite_apuesta=excluded.fecha_limite_apuesta,
+        resultado=excluded.resultado,
+        goleadores=excluded.goleadores,
+        modo=excluded.modo
+    `, [id_partido, nombre_lugar, fecha_hora_partido, fecha_limite_apuesta, resultado, goleadores, modo]);
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error guardando en la base de datos' });
+  }
 });
 
-// Ruta API para obtener resultados
-app.get('/resultados', (req, res) => {
-  obtenerResultados((err, resultados) => {
-    if (err) {
-      return res.status(500).json({ error: 'Error al obtener resultados' });
-    }
-    res.json(resultados);
-  });
-});
-
-// Esta ruta envía siempre el index.html para que la SPA funcione
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor iniciado en http://localhost:${PORT}`);
+// Iniciar servidor
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Servidor escuchando en http://localhost:${port}`);
 });
