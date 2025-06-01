@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Partido</title>
+</head>
+<body>
+  <h1>Admin Partido</h1>
+  <form id="formulario">
+    <label>ID Partido: <input type="text" name="id_partido" required /></label><br/>
+    <label>Nombre y lugar: <input type="text" name="nombre_lugar" required /></label><br/>
+    <label>Fecha y hora partido: <input type="datetime-local" name="fecha_hora_partido" required /></label><br/>
+    <label>Fecha límite apuesta: <input type="datetime-local" name="fecha_limite_apuesta" required /></label><br/>
+    <label>Resultado: <input type="text" name="resultado" required /></label><br/>
+    <label>Goleador 1: <input type="text" name="goleador1" /></label><br/>
+    <label>Goleador 2: <input type="text" name="goleador2" /></label><br/>
+    <label>Goleador 3: <input type="text" name="goleador3" /></label><br/>
+    <label>Goleador 4: <input type="text" name="goleador4" /></label><br/>
+    <label>Goleador 5: <input type="text" name="goleador5" /></label><br/>
+
+    <!-- Checkboxes modo -->
+    <label><input type="checkbox" name="modo" value="J" class="modoCheckbox" /> J</label>
+    <label><input type="checkbox" name="modo" value="C" class="modoCheckbox" /> C</label>
+    <label><input type="checkbox" name="modo" value="F" class="modoCheckbox" /> F</label>
+    <label><input type="checkbox" name="modo" value="P" class="modoCheckbox" /> P</label><br/>
+
+    <button type="submit">Guardar</button>
+  </form>
+
+  <script>
+    // Solo un checkbox modo marcado a la vez
+    const checkboxes = document.querySelectorAll('.modoCheckbox');
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) {
+          checkboxes.forEach(other => {
+            if (other !== cb) other.checked = false;
+          });
+        }
+      });
+    });
+
+    const form = document.getElementById('formulario');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = {
+        id_partido: formData.get('id_partido').trim(),
+        nombre_lugar: formData.get('nombre_lugar').trim(),
+        fecha_hora_partido: formData.get('fecha_hora_partido'),
+        fecha_limite_apuesta: formData.get('fecha_limite_apuesta'),
+        resultado: formData.get('resultado').trim(),
+        modo: [...checkboxes].find(cb => cb.checked)?.value || '',
+      };
+
+      // Goleadores concatenados o "nogol"
+      const goleadores = [];
+      for(let i=1; i<=5; i++) {
+        const val = formData.get('goleador' + i).trim();
+        if(val) goleadores.push(val);
+      }
+      data.goleadores = goleadores.length ? goleadores.join(',') : 'nogol';
+
+      if(!data.modo) {
+        alert('Marca un modo (J, C, F o P)');
+        return;
+      }
+
+      try {
+        const res = await fetch('/admin/guardar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        const json = await res.json();
+        if(res.ok) {
+          alert('Guardado correctamente');
+          form.reset();
+        } else {
+          alert('Error: ' + json.error);
+        }
+      } catch (err) {
+        alert('Error en conexión: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
