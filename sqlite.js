@@ -5,7 +5,7 @@ const dbPath = path.resolve(__dirname, "resultados.db");
 const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
-  db.run(\`
+  db.run(`
     CREATE TABLE IF NOT EXISTS resultados (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       fecha TEXT,
@@ -14,7 +14,7 @@ db.serialize(() => {
       goleador TEXT,
       modo TEXT
     )
-  \`);
+  `);
 });
 
 function guardarResultado({ fecha, pelotillero, resultado, goleador, modo }, callback) {
